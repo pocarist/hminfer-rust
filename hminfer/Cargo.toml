@@ -1,0 +1,6 @@
+[package]
+name = "hminfer"
+version = "0.1.0"
+authors = ["Kenji Tokudome <pocarist@gmail.com>"]
+
+[dependencies]

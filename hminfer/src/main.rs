@@ -405,11 +405,12 @@ impl TypeInfer {
     }
 
     //Rust: 引数のxを&Stringにできないのは何でなの？
+    //解決: Lifetimeを指定するとできた!
     /**
      * 環境中にで定義された識別子xに対応する型スキーマを取得する。
      */
-    fn lookup(e: &Env, x: String) -> Option<&TypeScheme> {
-        e.get(&x)
+    fn lookup<'a>(e: &'a Env, x: &String) -> Option<&'a TypeScheme> {
+        e.get(x)
     }
 
     /**
@@ -534,7 +535,7 @@ impl TypeInfer {
             &Term::Var(ref x) => {
                 // 変数参照eの型は、eの識別子e.xとして登録された型スキーマを実体化(全称量
                 // 化された変数のリネーム)をした型である。
-                match TypeInfer::lookup(&env, x.clone()) {
+                match TypeInfer::lookup(&env, x) {
                     None => Err(TypeError(format!("undefined: {}", x))),
                     Some(u) => self.mgu(&u.new_instance(), &t, s),
                 }
@@ -1036,9 +1037,9 @@ fn test_env_new_lookup1() {
     // 識別子に結びつけた型スキーマが環境からlookupできること。
     e.insert("a".to_string(), TypeScheme::new(vec![tyvar("a"), tyvar("b")], tyvar("c")));
     e.insert("b".to_string(), TypeScheme::new(vec![tyvar("a"), tyvar("b")], arrow(tyvar("a"), tyvar("c"))));
-    assert_eq!(TypeInfer::lookup(&e, "a".to_string()), Some(&TypeScheme::new(vec![tyvar("a"), tyvar("b")], tyvar("c"))));
-    assert_eq!(TypeInfer::lookup(&e, "b".to_string()), Some(&TypeScheme::new(vec![tyvar("a"), tyvar("b")], arrow(tyvar("a"), tyvar("c")))));
-    assert_eq!(TypeInfer::lookup(&e, "c".to_string()), None);
+    assert_eq!(TypeInfer::lookup(&e, &"a".to_string()), Some(&TypeScheme::new(vec![tyvar("a"), tyvar("b")], tyvar("c"))));
+    assert_eq!(TypeInfer::lookup(&e, &"b".to_string()), Some(&TypeScheme::new(vec![tyvar("a"), tyvar("b")], arrow(tyvar("a"), tyvar("c")))));
+    assert_eq!(TypeInfer::lookup(&e, &"c".to_string()), None);
 }
 
 #[test]
